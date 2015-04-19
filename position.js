@@ -1,36 +1,58 @@
 var tessel = require('tessel');
 var accel = require('accel-mma84').use(tessel.port['A']);
 var sms = require('./sms.js');
+var wifi = require('wifi-cc3000');
 
 var base = null;
 
-// Send first text
-console.log("Setup sms");
-sms.setup();
-console.log("Sending text using ", sms.sendMessage, "from module ", sms);
-sms.sendMessage("Sent from Tessel bi4tch!");
+// Connect to WiFi
+if (wifi.isEnabled()) {
+  console.log("WiFi is enabled!");
+
+  wifiConnect();
+} else {
+  console.log("Enabling wifi...");
+
+  wifi.enable(wifiConnect);
+}
+
+// Send text on connection
+wifi.on('connect', function(res) {
+  console.log("Connected!");
+
+  sms.sendMessage("+14154639141", "Your SudCycle device is connected to " + res.ssid);
+  console.log("Message sent? ");
+});
 
 // Initialize the accelerometer.
-accel.on('ready', function () {
-  // Stream accelerometer data
-  accel.on('data', function (xyz) {
-    if (!base) {
-      base = pos(xyz);
-    }
+// accel.on('ready', function () {
+//   // Stream accelerometer data
+//   accel.on('data', function (xyz) {
+//     if (!base) {
+//       base = pos(xyz);
+//     }
 
-    if (samePosition(base, pos(xyz))) {
-      console.log("Back to base position [", base.toString(), "]");
-    }
-    else {
-      console.log('base: [', base.toString(), ']');
-      console.log('current: [', pos(xyz).toString(), ']');
-    }
+//     if (samePosition(base, pos(xyz))) {
+//       console.log("Back to base position [", base.toString(), "]");
+//     }
+//     else {
+//       console.log('base: [', base.toString(), ']');
+//       console.log('current: [', pos(xyz).toString(), ']');
+//     }
+//   });
+// });
+
+// accel.on('error', function(err){
+//   console.log('Error:', err);
+// });
+
+function wifiConnect() {
+  console.log("Connecting to WiFi...");
+  wifi.connect({
+    ssid: "pubnub-ac",
+    password: "pubnub.com"
   });
-});
-
-accel.on('error', function(err){
-  console.log('Error:', err);
-});
+};
 
 function samePosition(base, xyz) {
   if (!base || !xyz) {
