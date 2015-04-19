@@ -35,10 +35,7 @@ sms.sendMessage = function(phoneNumber, message) {
       console.log("Got error: ", err);
     })
     res.on('data', function(data) {
-      console.log("Got some data: ", data);
-    });
-    res.on('end', function (data) {
-      console.log('Response: ' + data);
+      console.log("Message: ", data);
     });
   });
 
